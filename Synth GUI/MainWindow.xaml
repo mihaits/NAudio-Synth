@@ -1,0 +1,146 @@
+﻿<Window x:Class="WPFtest.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:WPFtest="clr-namespace:WPFtest"
+        mc:Ignorable="d"
+        Title="NAudio Synth" Height="286.403" Width="580" ResizeMode="NoResize" Closing="Window_Closing" KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
+    <Grid Height="225" VerticalAlignment="Top" HorizontalAlignment="Left" Width="571">
+        <Slider Name="volumeSlider"
+                HorizontalAlignment="Left" Margin="536,10,0,0" VerticalAlignment="Top" Height="198" Width="38"
+                Orientation="Vertical" Value="50" Minimum ="0" Maximum="100" ValueChanged="Slider_ValueChanged" TickFrequency="10" TickPlacement="Both"/>
+        <GroupBox Header="Filter" HorizontalAlignment="Left" Height="198" Margin="273,10,0,0" VerticalAlignment="Top" Width="258">
+            <Grid HorizontalAlignment="Left" Height="169" VerticalAlignment="Top" Width="243" Margin="0,0,-2,0">
+                <ComboBox Name="filterComboBox" Margin="90,10,0,0" VerticalAlignment="Top" SelectionChanged="ComboBox_SelectionChanged" IsReadOnly="True" HorizontalAlignment="Left" Width="120">
+                    <ComboBoxItem IsSelected="True" Content="LowPass"/>
+                    <ComboBoxItem Content="HighPass"/>
+                    <ComboBoxItem Content="BandPass"/>
+                </ComboBox>
+                <WPFtest:Knob x:Name="filterCutoff"
+                    Minimum="20" Maximum="20000" Value="20000" DefaultValue ="1000" Logarithmic="True"
+                    MouseSpeed="800" WheelStep="100"
+                    LabelMode="ValueLabel" LabelFontSize="40" CustomLabel="Cutoff" 
+                    StartAngle="-150" EndAngle="150" Margin="10,10,0,84" ValueChanged="FilterCutoff_ValueChanged" HorizontalAlignment="Left" Width="74"
+                />
+                <WPFtest:Knob x:Name="filterResonance"
+            Minimum="707" Maximum="5000" Value="707" DefaultValue ="707"
+            MouseSpeed="800" WheelStep="50"
+            LabelMode="CustomLabel" LabelFontSize="40" CustomLabel="Res" 
+            StartAngle="-150" EndAngle="150" Margin="90,37,0,84" ValueChanged="FilterResonance_ValueChanged" HorizontalAlignment="Left" Width="50"
+                      />
+                <WPFtest:Knob x:Name="filterEnvAmpKnob"
+            Minimum="-1000" Maximum="1000" Value="0" DefaultValue ="0"
+            MouseSpeed="800" WheelStep="10" 
+            LabelMode="CustomLabel" LabelFontSize="40" CustomLabel="Env"
+            StartAngle="-150" EndAngle="150" Margin="145,37,48,84" ValueChanged="FilterEnvAmpKnob_ValueChanged"
+                      />
+                <GroupBox Header="envelope                   " HorizontalAlignment="Left" Height="80" Margin="0,85,-29,0" VerticalAlignment="Top" Width="245">
+                    <Grid HorizontalAlignment="Left" Margin="0,-6" Width="235" Height="70" VerticalAlignment="Top">
+                        <WPFtest:Knob x:Name="CutoffAttackKnob"
+            Minimum="0" Maximum="5000" Value="1" DefaultValue ="1"
+            MouseSpeed="800" WheelStep="100"
+            LabelMode="CustomLabel" CustomLabel="A" LabelFontSize="75"                      
+            StartAngle="-150" EndAngle="150"
+            Margin="10,10,175,10" ValueChanged="CutoffAttackKnob_ValueChanged"
+                      />
+                        <WPFtest:Knob x:Name="CutoffDecayKnob"
+            Minimum="0" Maximum="10000" Value="10000" DefaultValue ="10000"
+            MouseSpeed="800" WheelStep="100"
+            LabelMode="CustomLabel" CustomLabel="D" LabelFontSize="75"  
+            StartAngle="-150" EndAngle="150" Margin="65,10,120,10" ValueChanged="CutoffDecayKnob_ValueChanged" RenderTransformOrigin="0.32,1.02"
+                      />
+                        <WPFtest:Knob x:Name="CutoffSustainKnob"
+            Minimum="0" Maximum="1000" Value="0" DefaultValue ="1000"
+            MouseSpeed="800" WheelStep="20"
+            LabelMode="CustomLabel" CustomLabel="S" LabelFontSize="75"  
+            StartAngle="-150" EndAngle="150" Margin="120,10,65,10" ValueChanged="CutoffSustainKnob_ValueChanged"
+                      />
+                        <WPFtest:Knob x:Name="CutoffReleaseKnob"
+            Minimum="0" Maximum="5000" Value="5000" DefaultValue ="5000"
+            MouseSpeed="800" WheelStep="100"
+            LabelMode="CustomLabel" CustomLabel="R" LabelFontSize="75"  
+            StartAngle="-150" EndAngle="150" Margin="175,10,0,0" ValueChanged="CutoffReleaseKnob_ValueChanged" HorizontalAlignment="Left" Width="50" Height="50" VerticalAlignment="Top"
+                      />
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Amplitude Envelope" HorizontalAlignment="Left" Height="100" Margin="10,10,0,0" VerticalAlignment="Top" Width="258">
+            <Grid HorizontalAlignment="Left" Height="72" Margin="4,2,-51,0" VerticalAlignment="Top" Width="235">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="177*"/>
+                    <ColumnDefinition Width="58*"/>
+                </Grid.ColumnDefinitions>
+                <WPFtest:Knob x:Name="attackKnob"
+            Minimum="0" Maximum="5000" Value="1" DefaultValue ="1"
+            MouseSpeed="800" WheelStep="100"
+            LabelMode="CustomLabel" CustomLabel="A" LabelFontSize="75"                      
+            StartAngle="-150" EndAngle="150"
+            Margin="10,10,0,0" ValueChanged="AttackKnob_ValueChanged" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50"
+                      />
+                <WPFtest:Knob x:Name="decayKnob"
+            Minimum="0" Maximum="10000" Value="10000" DefaultValue ="10000"
+            MouseSpeed="800" WheelStep="100"
+            LabelMode="CustomLabel" CustomLabel="D" LabelFontSize="75"  
+            StartAngle="-150" EndAngle="150" Margin="65,10,0,0" ValueChanged="DecayKnob_ValueChanged" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50"
+                      />
+                <WPFtest:Knob x:Name="sustainKnob"
+            Minimum="0" Maximum="1000" Value="1000" DefaultValue ="1000"
+            MouseSpeed="800" WheelStep="20"
+            LabelMode="CustomLabel" CustomLabel="S" LabelFontSize="75"  
+            StartAngle="-150" EndAngle="150" Margin="120,10,0,0" ValueChanged="SustainKnob_ValueChanged" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50"
+                      />
+                <WPFtest:Knob x:Name="releaseKnob"
+            Minimum="0" Maximum="5000" Value="1" DefaultValue ="1"
+            MouseSpeed="800" WheelStep="100"
+            LabelMode="CustomLabel" CustomLabel="R" LabelFontSize="75"  
+            StartAngle="-150" EndAngle="150" Margin="175,10,0,0" ValueChanged="ReleaseKnob_ValueChanged" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" Width="50" Grid.ColumnSpan="2"
+                      />
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Reverb" HorizontalAlignment="Left" Height="93" Margin="10,115,0,0" VerticalAlignment="Top" Width="124">
+            <Grid Height="83" VerticalAlignment="Top" Margin="0,0,0,-12" HorizontalAlignment="Left" Width="116">
+                <WPFtest:Knob 
+                Minimum="0" Maximum="1000" Value="0" DefaultValue="0"
+                StartAngle="-150" EndAngle="150"
+                MouseSpeed="800" WheelStep="10"
+                LabelMode="CustomLabel" CustomLabel="Amount" LabelFontSize="40"
+                Height="60" Width="60" VerticalAlignment="Top" HorizontalAlignment="Left" Margin="10,10,0,0"
+                ValueChanged="ReverbLevel_ValueChanged"/>
+                <WPFtest:Knob 
+                Minimum="1" Maximum="1000" Value="200" DefaultValue="200"
+                StartAngle="-150" EndAngle="150"
+                MouseSpeed="800" WheelStep="10"
+                LabelMode="CustomLabel" CustomLabel="Damp" LabelFontSize="60"
+                ValueChanged="ReverbDamp_ValueChanged"
+                Margin="75,44,0,0" Height="26" VerticalAlignment="Top" HorizontalAlignment="Left" Width="25"/>
+                <WPFtest:Knob 
+                Minimum="1" Maximum="1000" Value="840" DefaultValue="840"
+                StartAngle="-150" EndAngle="150"
+                MouseSpeed="800" WheelStep="10"
+                LabelMode="CustomLabel" CustomLabel="Room" LabelFontSize="60"
+                ValueChanged="ReverbRoom_ValueChanged"
+                Margin="75,10,0,0" Height="29" VerticalAlignment="Top" HorizontalAlignment="Left" Width="30"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Header="Waveform" HorizontalAlignment="Left" Height="93" Margin="139,115,0,0" VerticalAlignment="Top" Width="129">
+            <Grid HorizontalAlignment="Left" Height="89" Margin="4,-6,-2,-12" VerticalAlignment="Top" Width="115">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="51*"/>
+                    <ColumnDefinition Width="64*"/>
+                </Grid.ColumnDefinitions>
+                <RadioButton IsChecked ="True" GroupName="waveform" Content="sine" HorizontalAlignment="Left" Height="16" VerticalAlignment="Top" Margin="0,10,0,0" Width="40" Checked="Sine_Checked"/>
+                <RadioButton GroupName="waveform" Content="square" HorizontalAlignment="Left" Height="16" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Column="1" Width="55" Checked="Square_Checked"/>
+                <RadioButton GroupName="waveform" Content="saw" HorizontalAlignment="Left" Height="16" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Row="1" RenderTransformOrigin="0.222,0.521" Width="39" Checked="Saw_Checked"/>
+                <RadioButton GroupName="waveform" Content="triangle" HorizontalAlignment="Left" Height="16" Margin="0,10,0,0" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1" RenderTransformOrigin="0.271,0.479" Width="59" Checked="Triangle_Checked"/>
+            </Grid>
+        </GroupBox>
+        <CheckBox Content="Arpeggiator Enabled" HorizontalAlignment="Left" Height="18" Margin="10,213,0,-6" VerticalAlignment="Top" Checked="ArpCheckBox_checked" Unchecked="ArpCheckBox_unchecked"/>
+
+    </Grid>
+</Window>
