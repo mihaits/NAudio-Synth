@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Windows;
 using NAudio.CoreAudioApi;
@@ -9,10 +10,12 @@ using NAudio_Synth;
 
 namespace SynthGUI
 {
+    /// <inheritdoc cref="Window" />
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    public partial class MainWindow
     {
         private SynthEngine _synthEngine;
 
@@ -124,7 +127,7 @@ namespace SynthGUI
             if (!_keyNote.ContainsKey((int) e.Key))
                 return;
 
-            if (_pressedKeys.Find(k => k == (int) e.Key) == default(int))
+            if (_pressedKeys.Find(k => k == (int) e.Key) == default)
             {
                 _pressedKeys.Add((int) e.Key);
 
@@ -219,19 +222,20 @@ namespace SynthGUI
 
         private void ComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
-            if (_synthEngine != null)
-                switch (filterComboBox.SelectedIndex)
-                {
-                    case 0:
-                        _synthEngine.FilterMode = FilterMode.LowPass;
-                        break;
-                    case 1:
-                        _synthEngine.FilterMode = FilterMode.HighPass;
-                        break;
-                    case 2:
-                        _synthEngine.FilterMode = FilterMode.BandPass;
-                        break;
-                }
+            if (_synthEngine == null) return;
+            
+            switch (FilterComboBox.SelectedIndex)
+            {
+                case 0:
+                    _synthEngine.FilterMode = FilterMode.LowPass;
+                    break;
+                case 1:
+                    _synthEngine.FilterMode = FilterMode.HighPass;
+                    break;
+                case 2:
+                    _synthEngine.FilterMode = FilterMode.BandPass;
+                    break;
+            }
         }
 
         private void ReverbLevel_ValueChanged(object sender, RoutedPropertyChangedEventArgs<int> e)
@@ -279,9 +283,9 @@ namespace SynthGUI
 
             if (msg[0] >> 4 == 9 && msg[2] > 0)
             {
-                var channel = (msg[0] & 0x0F) + 1;
+                // var channel = (msg[0] & 0x0F) + 1;
                 var note = msg[1];
-                var velocity = msg[2];
+                // var velocity = msg[2];
 
                 if (_arpThreadRunning)
                     _arpNotes.AddNote(note);
@@ -290,7 +294,7 @@ namespace SynthGUI
             }
             if (msg[0] >> 4 == 8 || (msg[0] >> 4 == 9 && msg[2] == 0))
             {
-                var channel = (msg[0] & 0x0F) + 1;
+                // var channel = (msg[0] & 0x0F) + 1;
                 var note = msg[1];
 
                 if (_arpThreadRunning)
@@ -302,13 +306,13 @@ namespace SynthGUI
             if (msg[1] == 7)
                 Dispatcher.Invoke(() =>
                 {
-                    volumeSlider.Value = msg[2] * 100 / 128f;
+                    VolumeSlider.Value = msg[2] * 100 / 128f;
                 });
 
             if (msg[1] == 1)
                 Dispatcher.Invoke(() =>
                 {
-                    filterCutoff.LinearValue = msg[2] * 19980 / 127 - 20;
+                    FilterCutoff.LinearValue = msg[2] * 19980 / 127 - 20;
                 });
         }
 
@@ -356,7 +360,7 @@ namespace SynthGUI
 
     public class ArpNotes
     {
-        private List<int> _notes;
+        private readonly List<int> _notes;
         private int _currentIndex;
 
         public ArpNotes() {

@@ -8,14 +8,15 @@ using System.Windows.Shapes;
 
 namespace SynthGUI
 {
+    /// <inheritdoc cref="UserControl" />
     /// <summary>
     /// Interaction logic for Knob.xaml
     /// </summary>
-    /// 
     [DefaultEvent("ValueChanged"), DefaultProperty("Value")]
-    public partial class Knob : UserControl
+    public partial class Knob
     {
-        public event RoutedPropertyChangedEventHandler<int> ValueChanged = null;
+        public event RoutedPropertyChangedEventHandler<int> ValueChanged;
+
         public enum KnobLabelMode { NoLabel, ValueLabel, CustomLabel};
 
         private void OnChanged(RoutedPropertyChangedEventArgs<int> e)
@@ -27,18 +28,18 @@ namespace SynthGUI
 
         private double _arcStartAngle;
         private double _arcEndAngle;
-        private int _Value;
-        private int _Minimum;
-        private int _Maximum;
-        private int _Factor;
-        private double _LabelFontSize;
-        private KnobLabelMode _LabelMode;
-        private FontFamily _LabelFont;
-        private string _CustomLabel;
-        private double A, B;
+        private int _value;
+        private int _minimum;
+        private int _maximum;
+        private int _factor;
+        private double _labelFontSize;
+        private KnobLabelMode _labelMode;
+        private FontFamily _labelFont;
+        private string _customLabel;
+        private double _a, _b;
 
-        private bool isMouseDown = false;
-        private Point previousMousePosition;
+        private bool _isMouseDown;
+        private Point _previousMousePosition;
 
         #endregion Private Fields
 
@@ -48,25 +49,25 @@ namespace SynthGUI
 
             _arcStartAngle = -180;
             _arcEndAngle = 180;
-            _Value = 0;
-            _Minimum = 0;
-            _Maximum = 100;
-            _Factor = 1;
-            _LabelFontSize = 22;
-            _LabelFont = new FontFamily("Consolas");
-            _CustomLabel = string.Empty;
-            _LabelMode = KnobLabelMode.NoLabel;
+            _value = 0;
+            _minimum = 0;
+            _maximum = 100;
+            _factor = 1;
+            _labelFontSize = 22;
+            _labelFont = new FontFamily("Consolas");
+            _customLabel = string.Empty;
+            _labelMode = KnobLabelMode.NoLabel;
             MouseSpeed = 500;
             WheelStep = 1;
             DefaultValue = 1;
             Logarithmic = false;
             UpdateAB();
-            isMouseDown = false;
+            _isMouseDown = false;
         }
 
         public double StartAngle
         {
-            get { return _arcStartAngle; }
+            get => _arcStartAngle;
             set
             {
                 _arcStartAngle = value;
@@ -76,7 +77,7 @@ namespace SynthGUI
 
         public double EndAngle
         {
-            get { return _arcEndAngle; }
+            get => _arcEndAngle;
             set
             {
                 _arcEndAngle = value;
@@ -86,10 +87,10 @@ namespace SynthGUI
 
         public int ViewFactor
         {
-            get { return _Factor; }
+            get => _factor;
             set
             {
-                _Factor = value;
+                _factor = value;
                 UpdateView();
             }
         }
@@ -98,32 +99,34 @@ namespace SynthGUI
 
         public int Value
         {
-            get { return Logarithmic ? (int) Math.Pow(Math.E, A * _Value + B) : _Value; }
+            get => Logarithmic ? (int) Math.Pow(Math.E, _a * _value + _b) : _value;
             set
             {
-                int oldValue = Value;
-                _Value = Logarithmic ? (int) ((Math.Log(value) - B) / A) : value;
-                _Value = Math.Min(Math.Max(_Minimum, _Value), _Maximum);
+                var oldValue = Value;
+                _value = Logarithmic ? (int) ((Math.Log(value) - _b) / _a) : value;
+                _value = Math.Min(Math.Max(_minimum, _value), _maximum);
 
-                if (IsLoaded)
-                {
-                    if(oldValue != value)
-                        OnChanged(new RoutedPropertyChangedEventArgs<int>(oldValue, Value));
-                    UpdateView();
-                }
+                if (!IsLoaded) return;
+
+                if(oldValue != value)
+                    OnChanged(new RoutedPropertyChangedEventArgs<int>(oldValue, Value));
+
+                UpdateView();
             }
         }
 
         public int LinearValue {
-            get { return _Value; }
+            get => _value;
             set
             {
                 var oldValue = Value;
-                _Value = value;
+                _value = value;
 
-                if (IsLoaded)
-                    if (oldValue != Value)
-                        OnChanged(new RoutedPropertyChangedEventArgs<int>(oldValue, Value));
+                if (!IsLoaded)
+                    return;
+
+                if(oldValue != Value)
+                    OnChanged(new RoutedPropertyChangedEventArgs<int>(oldValue, Value));
 
                 UpdateView();
             }
@@ -136,10 +139,10 @@ namespace SynthGUI
 
         public int Minimum
         {
-            get { return _Minimum; }
+            get => _minimum;
             set
             {
-                _Minimum = value;
+                _minimum = value;
                 UpdateAB();
                 UpdateView();
             }
@@ -147,10 +150,10 @@ namespace SynthGUI
 
         public int Maximum
         {
-            get { return _Maximum; }
+            get => _maximum;
             set
             {
-                _Maximum = value;
+                _maximum = value;
                 UpdateAB();
                 UpdateView();
             }
@@ -162,19 +165,19 @@ namespace SynthGUI
 
         public KnobLabelMode LabelMode
         {
-            get { return _LabelMode; }
+            get => _labelMode;
             set
             {
-                _LabelMode = value;
+                _labelMode = value;
                 UpdateView();
             }
         }
 
         public string CustomLabel {
-            get { return _CustomLabel;  }
+            get => _customLabel;
             set
             {
-                _CustomLabel = value;
+                _customLabel = value;
                 UpdateView();
             }
         }
@@ -184,58 +187,60 @@ namespace SynthGUI
             switch (LabelMode)
             {
                 case KnobLabelMode.CustomLabel:
-                    valueText.Text = CustomLabel;
-                    valueText.FontFamily = LabelFont;
-                    valueText.FontSize = LabelFontSize;
+                    ValueText.Text = CustomLabel;
+                    ValueText.FontFamily = LabelFont;
+                    ValueText.FontSize = LabelFontSize;
                     break;
 
                 case KnobLabelMode.ValueLabel:
-                    valueText.Text = (1d * Value / ViewFactor).ToString("F" + (int)Math.Log10(ViewFactor));
-                    valueText.FontFamily = LabelFont;
-                    valueText.FontSize = LabelFontSize;
+                    ValueText.Text = (1d * Value / ViewFactor).ToString("F" + (int)Math.Log10(ViewFactor));
+                    ValueText.FontFamily = LabelFont;
+                    ValueText.FontSize = LabelFontSize;
                     break;
 
                 case KnobLabelMode.NoLabel:
-                    valueText.Text = string.Empty;
+                    ValueText.Text = string.Empty;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
-            needle.RenderTransform = new RotateTransform((EndAngle - StartAngle) / (Maximum - Minimum) * (_Value - Minimum) + StartAngle, 100, 100);
+            Needle.RenderTransform = new RotateTransform((EndAngle - StartAngle) / (Maximum - Minimum) * (_value - Minimum) + StartAngle, 100, 100);
         }
 
         private void UpdateAB()
         {
-            A = Math.Log(1f * _Maximum / _Minimum) / (_Maximum - _Minimum);
-            B = Math.Log(_Maximum) - _Maximum * A;
+            _a = Math.Log(1f * _maximum / _minimum) / (_maximum - _minimum);
+            _b = Math.Log(_maximum) - _maximum * _a;
         }
 
         public FontFamily LabelFont
         {
-            get { return _LabelFont; }
+            get => _labelFont;
             set
             {
-                _LabelFont = value;
+                _labelFont = value;
                 UpdateView();
             }
         }
 
         public double LabelFontSize
         {
-            get { return _LabelFontSize; }
+            get => _labelFontSize;
             set
             {
-                _LabelFontSize = value;
+                _labelFontSize = value;
                 UpdateView();
             }
         }
 
         private void Ellipse_MouseWheel(object sender, MouseWheelEventArgs e)
         {
-            int oldValue = Value;
+            var oldValue = Value;
 
-            int d = e.Delta / 120; // Mouse wheel 1 click (120 delta) = 1 step
-            _Value += d * WheelStep;
-            _Value = Math.Min(Math.Max(_Minimum, _Value), _Maximum);
+            var d = e.Delta / 120; // Mouse wheel 1 click (120 delta) = 1 step
+            _value += d * WheelStep;
+            _value = Math.Min(Math.Max(_minimum, _value), _maximum);
 
             if (oldValue != Value)
                 OnChanged(new RoutedPropertyChangedEventArgs<int>(oldValue, Value));
@@ -245,43 +250,42 @@ namespace SynthGUI
 
         private void Ellipse_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            isMouseDown = true;
-            (sender as Ellipse).CaptureMouse();
-            previousMousePosition = e.GetPosition((Ellipse)sender);
+            _isMouseDown = true;
+            (sender as Ellipse)?.CaptureMouse();
+            _previousMousePosition = e.GetPosition((Ellipse)sender);
         }
 
         private void Ellipse_MouseMove(object sender, MouseEventArgs e)
         {
-            if (isMouseDown)
-            {
-                var oldValue = Value;
-                Point newMousePosition = e.GetPosition((Ellipse)sender);
+            if (!_isMouseDown) return;
+            
+            var oldValue = Value;
+            var newMousePosition = e.GetPosition((Ellipse)sender);
 
-                double dY = (previousMousePosition.Y - newMousePosition.Y);
+            var dY = (_previousMousePosition.Y - newMousePosition.Y);
 
-                _Value += (int) dY * (_Maximum - _Minimum) / MouseSpeed;
-                _Value = Math.Min(Math.Max(_Minimum, _Value), _Maximum);
+            _value += (int) dY * (_maximum - _minimum) / MouseSpeed;
+            _value = Math.Min(Math.Max(_minimum, _value), _maximum);
 
-                if (oldValue != Value)
-                    OnChanged(new RoutedPropertyChangedEventArgs<int>(oldValue, Value));
+            if (oldValue != Value)
+                OnChanged(new RoutedPropertyChangedEventArgs<int>(oldValue, Value));
                 
-                previousMousePosition = newMousePosition;
-                UpdateView();
-            }
+            _previousMousePosition = newMousePosition;
+            UpdateView();
         }
 
         private void Ellipse_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            isMouseDown = false;
-            (sender as Ellipse).ReleaseMouseCapture();
+            _isMouseDown = false;
+            (sender as Ellipse)?.ReleaseMouseCapture();
         }
 
-        private void knobUserControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void KnobUserControl_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             Value = DefaultValue;
         }
 
-        private void knobUserControl_Loaded(object sender, RoutedEventArgs e)
+        private void KnobUserControl_Loaded(object sender, RoutedEventArgs e)
         {
             UpdateView();
         }
