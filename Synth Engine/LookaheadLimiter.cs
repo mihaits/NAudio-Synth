@@ -5,7 +5,7 @@ namespace NAudio_Synth
 {
     public class LookaheadLimiter : WaveEffect32
     {
-        private float[] _bufferL, _bufferR;
+        private readonly float[] _bufferL, _bufferR;
         private float _multiplierL, _multiplierR;
         private readonly float _limit;
         private int _posL, _posR;
@@ -42,7 +42,7 @@ namespace NAudio_Synth
             return Math.Abs(x);
         }
 
-        private void Process(ref float[] buffer, ref int pos, ref float multiplier, float newSample)
+        private void Process(float[] buffer, ref int pos, ref float multiplier, float newSample)
         {
             buffer[pos] = newSample;
             pos = Norm(pos + 1);
@@ -53,7 +53,7 @@ namespace NAudio_Synth
             for (var i = 0; i < buffer.Length; ++i)
                 if ((Abs(buffer[Norm(pos + i)]) - _limit) /       (i + 1)
                     >
-                    (Abs(peak) - _limit)                        / (peakPos + 1))
+                    (Abs(peak) - _limit)                    / (peakPos + 1))
                 {
                     peak = buffer[Norm(pos + i)];
                     peakPos = i;
@@ -62,7 +62,12 @@ namespace NAudio_Synth
             if (Abs(peak) * multiplier >= _limit)
                 multiplier -= (multiplier - _limit / Abs(peak)) / (peakPos + 1);
             else if (multiplier < 1)
-                multiplier = Math.Min(1, multiplier + Bound(0, 1f / WaveFormat.SampleRate, (_limit / Abs(peak) - multiplier) / (peakPos + 1)));
+                multiplier = Math.Min(
+                    1,
+                    multiplier + Bound(
+                        0,
+                        1f / WaveFormat.SampleRate,
+                        (_limit / Abs(peak) - multiplier) / (peakPos + 1)));
         }
 
         public override float Apply(float sample)
@@ -71,7 +76,7 @@ namespace NAudio_Synth
 
             if (_onLeftChannel)
             {
-                Process(ref _bufferL, ref _posL, ref _multiplierL, sample);
+                Process(_bufferL, ref _posL, ref _multiplierL, sample);
 
                 return _bufferL[_posL] * (
                            ProcessStereoSeparately
@@ -80,7 +85,7 @@ namespace NAudio_Synth
             }
             else
             {
-                Process(ref _bufferR, ref _posR, ref _multiplierR, sample);
+                Process(_bufferR, ref _posR, ref _multiplierR, sample);
 
                 return _bufferR[_posR] * (
                            ProcessStereoSeparately
