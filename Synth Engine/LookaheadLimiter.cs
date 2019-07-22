@@ -5,27 +5,27 @@ namespace NAudio_Synth
 {
     public class LookaheadLimiter : WaveEffect32
     {
-        private float[] _buffer;
-        private float _multiplier;
-        private float _limit, _actualLimit;
-        private int _pos;
+        private float[] _bufferL, _bufferR;
+        private float _multiplierL, _multiplierR;
+        private readonly float _limit;
+        private int _posL, _posR;
+        private bool _onLeftChannel;
+
+        public bool ProcessStereoSeparately { get; set; }
 
         public LookaheadLimiter(WaveProvider32 input, float limit, int bufferSize) : base(input)
         {
-            _multiplier = 1;
+            _multiplierL = _multiplierR = 1;
 
-            this._limit = limit;
-            _actualLimit = limit;
+            _limit = limit;
 
-            _pos = 0;
-            _buffer = new float[bufferSize];
-            for (var i = 0; i < bufferSize; ++ i)
-                _buffer[i] = 0;
+            _bufferL = new float[bufferSize];
+            _bufferR = new float[bufferSize];
         }
 
         private int Norm(int i)
         {
-            return i % _buffer.Length; 
+            return i % _bufferL.Length; 
         }
 
         private static float Bound(float min, float max, float value)
@@ -42,30 +42,51 @@ namespace NAudio_Synth
             return Math.Abs(x);
         }
 
-        public override float Apply(float sample)
+        private void Process(ref float[] buffer, ref int pos, ref float multiplier, float newSample)
         {
-            _buffer[_pos] = sample;
-            _pos = Norm(_pos + 1);
+            buffer[pos] = newSample;
+            pos = Norm(pos + 1);
 
-            var peak = _buffer[_pos];
+            var peak = buffer[pos];
             var peakPos = 0;
 
-            for (var i = 0; i < _buffer.Length; ++i)
-                if ((Abs(_buffer[Norm(_pos + i)]) - _limit) /       (i + 1)
+            for (var i = 0; i < buffer.Length; ++i)
+                if ((Abs(buffer[Norm(pos + i)]) - _limit) /       (i + 1)
                     >
-                    (Abs(peak) - _limit)                  / (peakPos + 1))
+                    (Abs(peak) - _limit)                        / (peakPos + 1))
                 {
-                    peak = _buffer[Norm(_pos + i)];
+                    peak = buffer[Norm(pos + i)];
                     peakPos = i;
                 }
 
-            if (Abs(peak) * _multiplier >= _limit)
-                _multiplier -= ((_multiplier - _limit / Abs(peak)) / (peakPos + 1));
-            else if (_multiplier < 1)
-                _multiplier = Math.Min(1, _multiplier + Bound(0, 1f / WaveFormat.SampleRate, ((_limit / Abs(peak) - _multiplier) / (peakPos + 1))));
+            if (Abs(peak) * multiplier >= _limit)
+                multiplier -= (multiplier - _limit / Abs(peak)) / (peakPos + 1);
+            else if (multiplier < 1)
+                multiplier = Math.Min(1, multiplier + Bound(0, 1f / WaveFormat.SampleRate, (_limit / Abs(peak) - multiplier) / (peakPos + 1)));
+        }
 
-            
-            return _buffer[_pos] * _multiplier;
+        public override float Apply(float sample)
+        {
+            _onLeftChannel = !_onLeftChannel;
+
+            if (_onLeftChannel)
+            {
+                Process(ref _bufferL, ref _posL, ref _multiplierL, sample);
+
+                return _bufferL[_posL] * (
+                           ProcessStereoSeparately
+                               ? _multiplierL
+                               : Math.Min(_multiplierL, _multiplierR));
+            }
+            else
+            {
+                Process(ref _bufferR, ref _posR, ref _multiplierR, sample);
+
+                return _bufferR[_posR] * (
+                           ProcessStereoSeparately
+                               ? _multiplierR
+                               : Math.Min(_multiplierL, _multiplierR));
+            }
         }
     }
 }
