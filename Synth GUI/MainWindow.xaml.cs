@@ -7,7 +7,7 @@ using NAudio.Midi;
 using NAudio.Wave;
 using NAudio_Synth;
 
-namespace WPFtest
+namespace SynthGUI
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml

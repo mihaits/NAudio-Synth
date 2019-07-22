@@ -1,7 +1,7 @@
-﻿<Application x:Class="WPFtest.App"
+﻿<Application x:Class="SynthGUI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:WPFtest"
+             xmlns:local="clr-namespace:SynthGUI"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          

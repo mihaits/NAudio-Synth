@@ -6,7 +6,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace WPFtest
+namespace SynthGUI
 {
     /// <summary>
     /// Interaction logic for Knob.xaml
