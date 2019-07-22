@@ -64,19 +64,6 @@ namespace NAudio_Synth
             else if (_multiplier < 1)
                 _multiplier = Math.Min(1, _multiplier + Bound(0, 1f / WaveFormat.SampleRate, ((_limit / Abs(peak) - _multiplier) / (peakPos + 1))));
 
-            if (Abs(_buffer[_pos]) * _multiplier > _actualLimit)
-            {
-                _limit /= (Abs(_buffer[_pos]) * _multiplier);
-                Console.WriteLine("limiter self correction: " + (_actualLimit - _limit));
-
-                if (_limit / _actualLimit < .99)
-                {
-                    Console.WriteLine("limiter overcorrection, resetting internal limit");
-                    _limit = _actualLimit;
-                }
-
-                return Math.Sign(_buffer[_pos]) * _actualLimit;
-            }
             
             return _buffer[_pos] * _multiplier;
         }
